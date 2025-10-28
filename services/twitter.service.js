@@ -1,8 +1,22 @@
 import { getTwitterSearchResults } from "../integrations/twitterAPI.js";
 import { SocialPost } from "../models/data.js";
 
-export const fetchTwitterSearch = async (keyword, options = {}) => {
-  const results = await getTwitterSearchResults({ keyword, ...options });
+export const fetchTwitterSearch = async (
+  keyword,
+  { include = [], exclude = [], language = "en", startDate, endDate } = {}
+) => {
+  // Build query string
+  let query = keyword;
+  if (include.length) query += " " + include.join(" ");
+  if (exclude.length) query += " -" + exclude.join(" -");
+  if (language) query += ` lang:${language}`;
+
+  const results = await getTwitterSearchResults({
+    keyword: query,
+    startDate,
+    endDate,
+  });
+
   if (!results?.length) return [];
 
   const docs = results.map((tweet) => ({
@@ -22,7 +36,7 @@ export const fetchTwitterSearch = async (keyword, options = {}) => {
   try {
     await SocialPost.insertMany(docs, { ordered: false });
   } catch (err) {
-    console.warn("⚠️ Some Twitter docs may have failed to insert:", err.message);
+    console.warn("⚠️ Twitter insert warning:", err.message);
   }
 
   return docs;

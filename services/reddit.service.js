@@ -1,8 +1,21 @@
 import { getRedditSearchResults } from "../integrations/redditAPI.js";
 import { SocialPost } from "../models/data.js";
 
-export const fetchRedditSearch = async (keyword, options = {}) => {
-  const results = await getRedditSearchResults({ keyword, ...options });
+export const fetchRedditSearch = async (
+  keyword,
+  { include = [], exclude = [], startDate, endDate } = {}
+) => {
+  // Build query
+  let query = keyword;
+  if (include.length) query += " " + include.join(" ");
+  if (exclude.length) query += " -" + exclude.join(" -");
+
+  const results = await getRedditSearchResults({
+    keyword: query,
+    startDate,
+    endDate,
+  });
+
   if (!results?.length) return [];
 
   const docs = results.map((post) => ({
@@ -21,7 +34,7 @@ export const fetchRedditSearch = async (keyword, options = {}) => {
   try {
     await SocialPost.insertMany(docs, { ordered: false });
   } catch (err) {
-    console.warn("⚠️ Some Reddit docs may have failed to insert:", err.message);
+    console.warn("⚠️ Reddit insert warning:", err.message);
   }
 
   return docs;

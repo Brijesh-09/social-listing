@@ -1,14 +1,29 @@
 import { getYouTubeSearchResults } from "../integrations/youtubeAPI.js";
 import { SocialPost } from "../models/data.js";
 
-export const fetchYouTubeSearch = async (keyword, options = {}) => {
-  const results = await getYouTubeSearchResults({ keyword, ...options });
+export const fetchYouTubeSearch = async (
+  keyword,
+  { include = [], exclude = [], language = "en", country = "IN", startDate, endDate } = {}
+) => {
+  // Build query
+  let query = keyword;
+  if (include.length) query += " " + include.join(" ");
+  if (exclude.length) query += " -" + exclude.join(" -");
+
+  const results = await getYouTubeSearchResults({
+    keyword: query,
+    language,
+    regionCode: country,
+    startDate,
+    endDate,
+  });
+
   if (!results?.length) return [];
 
   const docs = results.map((video) => ({
     keyword,
     platform: "youtube",
-    createdAt: new Date(video.publishedAt || Date.now()),
+    createdAt: new Date(video.publishedAt),
     author: { name: video.channelTitle },
     content: {
       text: video.title,
@@ -26,7 +41,7 @@ export const fetchYouTubeSearch = async (keyword, options = {}) => {
   try {
     await SocialPost.insertMany(docs, { ordered: false });
   } catch (err) {
-    console.warn("⚠️ Some YouTube docs may have failed to insert:", err.message);
+    console.warn("⚠️ YouTube insert warning:", err.message);
   }
 
   return docs;
