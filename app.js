@@ -3,6 +3,7 @@ import cors from "cors";
 
 // Import routes
 import searchRoutes from "./routes/search.route.js";
+import brandRoutes from "./routes/brand.route.js";
 
 const app = express();
 
@@ -17,5 +18,8 @@ app.use("/api/search", searchRoutes);
 app.get("/health", (req, res) => {
   res.json({ success: true, message: "Server is running" });
 });
+
+
+app.use("/api/brands", brandRoutes);
 
 export { app };
