@@ -82,22 +82,35 @@ export const forgotPassword = async (req, res) => {
     user.resetPasswordExpires = Date.now() + 60 * 60 * 1000; // 1 hour
     await user.save();
 
-    const resetURL = `http://localhost:3000/reset-password/${resetToken}`;
+    const resetURL = `http://localhost:5050/auth/api/reset-password/${resetToken}`;
 
-    // Send email via nodemailer
+    // ✅ Create SMTP transporter (example: your own mail server or AWS SES)
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: process.env.SMTP_HOST, // e.g. "smtp.gmail.com" or "email-smtp.ap-south-1.amazonaws.com"
+      port: process.env.SMTP_PORT || 587, // 465 for SSL, 587 for TLS
+      secure: process.env.SMTP_SECURE === "true", // true if port 465
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: process.env.SMTP_USER, // your SMTP username
+        pass: process.env.SMTP_PASS, // your SMTP password
+      },
+      tls: {
+        rejectUnauthorized: false, // helps if you have self-signed certs
       },
     });
 
+    // ✅ Verify SMTP connection before sending (optional)
+    await transporter.verify();
+
+    // ✅ Send mail
     await transporter.sendMail({
+      from: `"Support" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
       to: user.email,
-      from: process.env.EMAIL_USER,
-      subject: "Password Reset",
-      html: `<p>Click <a href="${resetURL}">here</a> to reset your password. This link expires in 1 hour.</p>`,
+      subject: "Password Reset Request",
+      html: `
+        <p>Hi ${user.name || ""},</p>
+        <p>Click <a href="${resetURL}">here</a> to reset your password.</p>
+        <p>This link expires in 1 hour.</p>
+      `,
     });
 
     res.json({ success: true, message: "Password reset email sent" });
