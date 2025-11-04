@@ -1,4 +1,4 @@
-// controllers/data.controller.js
+// // controllers/data.controller.js
 import { Brand } from "../models/brand.js";
 import { SocialPost } from "../models/data.js";
 
@@ -58,37 +58,37 @@ export const getPostsByBrand = async (req, res) => {
   }
 };
 
-export const getAllKeywordsByBrand = async (req, res) => {
-  try {
-    const { brandName } = req.query;
+// export const getAllKeywordsByBrand = async (req, res) => {
+//   try {
+//     const { brandName } = req.query;
 
-    if (!brandName) {
-      return res
-        .status(400)
-        .json({ success: false, message: "brandName query parameter is required" });
-    }
+//     if (!brandName) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "brandName query parameter is required" });
+//     }
 
-    const brand = await Brand.findOne({ brandName });
-    if (!brand) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Brand not found" });
-    }
+//     const brand = await Brand.findOne({ brandName });
+//     if (!brand) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "Brand not found" });
+//     }
 
-    const keywords = await SocialPost.distinct("keyword", { brand: brand._id });
+//     const keywords = await SocialPost.distinct("keyword", { brand: brand._id });
 
-    res.json({
-      success: true,
-      brand: brandName,
-      count: keywords.length,
-      keywords
-    });
-  } catch (err) {
-    console.error("Error fetching brand keywords:", err);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-      error: err.message
-    });
-  }
-};
+//     res.json({
+//       success: true,
+//       brand: brandName,
+//       count: keywords.length,
+//       keywords
+//     });
+//   } catch (err) {
+//     console.error("Error fetching brand keywords:", err);
+//     res.status(500).json({
+//       success: false,
+//       message: "Server error",
+//       error: err.message
+//     });
+//   }
+// };
