@@ -5,6 +5,7 @@ import cors from "cors";
 import searchRoutes from "./routes/search.route.js";
 import brandRoutes from "./routes/brand.route.js";
 import authRoutes from "./routes/auth.route.js";
+import dataRoutes from "./routes/data.routes.js";
 
 const app = express();
 
@@ -23,5 +24,6 @@ app.get("/health", (req, res) => {
 
 app.use("/api/brands", brandRoutes);
 app.use("/api/auth", authRoutes)
+app.use("/api/data", dataRoutes);
 
 export { app };
